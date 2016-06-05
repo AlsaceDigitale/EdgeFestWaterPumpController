@@ -1,7 +1,7 @@
 /**
- * Edgefest Waterpump controler firmware
+ * Edgefest Waterpump Controller
  * Created on: 08/06/2016
- * Copyright (C) 2016 Manuel Rauscher, Alsace Digitale
+ * Copyright (C) 2016 Manuel Rauscher, Alsace Digitale.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,9 +23,9 @@ const uint16_t PUMP_PRESSURIZING_DELAY = 1000;
 const uint16_t WATER_OUTPUT_TIME = 500;
 
 /* Serial Buffer and Flags */
-// A string to hold incoming data.
+// Holds incoming data.
 char inputString[COMMAND_BUFFER_SIZE];
-// Flag whether the serial command is complete.
+// Flag whenever the serial command is complete.
 boolean stringComplete = false;  
 
 /* PLAYER FLAGS */
@@ -50,6 +50,9 @@ void setup() {
   //TODO map GPIO to outputs and set them to low by default
 }
 
+/**
+ * Main programm loop
+ */
 void loop() {
   // is the command ready to be parsed?
   if (stringComplete) {
@@ -67,11 +70,9 @@ void loop() {
 }
 
 /**
- * Parses a command containted in the buffer
+ * Parses commands inside in the buffer
  */
 void parseCommand(char* acCommand, int iBufferSize) {
-  // Command parsing:
-  
     // Command parsing: 
     if(acCommand[0] == 'p' && acCommand[1] == ':' && (acCommand[2] == '1' || acCommand[2] == '2'))
     {
@@ -109,15 +110,13 @@ void serialEvent(){
   static uint8_t cnt = 0;
   while (Serial.available()) {
     
-     // read byte from Serial FIFO buffer and convert to char. Place char in the memory
+     // Read byte from serial FIFO buffer and convert to char.
      char in = (char)Serial.read();
-
-     // are we overflowing our array? (or it is EoL)
+     // Do we have an overflow of our array or do we have an EoL?
      if(cnt >= COMMAND_BUFFER_SIZE || in == '\n')
      {
-       // Silly arduino does not allow to clear input FIFO / Buffer... so thank you very much...
        cnt = 0; // Reset index counter
-       stringComplete = true; // set flag ready to parse
+       stringComplete = true; // Set flag ready to parse
        return;
     }
     inputString[cnt++] = in;
@@ -126,7 +125,7 @@ void serialEvent(){
 
 
 /**
- * This state machine heartbeat handles transistions between pump states
+ * Handles transistions between pump states
  */
 void pumpStateMachineHandler()
 {
@@ -214,7 +213,7 @@ void pumpStateMachineHandler()
 }
 
 /**
- * Set's the outputs to the right position
+ * Handles outputs of pump state machine
  */
 void pumpStateMachineOutput()
 {
