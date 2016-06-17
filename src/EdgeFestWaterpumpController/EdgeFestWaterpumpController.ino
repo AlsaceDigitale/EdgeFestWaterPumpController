@@ -34,12 +34,12 @@ char inputString[COMMAND_BUFFER_SIZE];
 boolean stringComplete = false;  
 
 /* PLAYER FLAGS */
-boolean fWetPlayer1 = false;
-boolean fWetPlayer2 = false;
+boolean fDampPlayer1 = false;
+boolean fDampPlayer2 = false;
 
 /* PUMP FINITE STATE MACHINE */
 typedef enum ePumpState {
-  STANDBY = 0, PRESSURISING, READY, WETTING_P1, WETTING_P2
+  STANDBY = 0, PRESSURISING, READY, MOISTING_P1, MOISTING_P2
 } ePumpState;
 ePumpState sPumpState = STANDBY;
 unsigned long ulPumpTurnedOn = 0;
@@ -87,12 +87,12 @@ void parseCommand(char* acCommand, int iBufferSize) {
       Serial.print("Queuing for player ");
       if(acCommand[2] == '1')
       {
-        fWetPlayer1 = true;
+        fDampPlayer1 = true;
         Serial.println("1");
       }
       else
       {
-        fWetPlayer2 = true;
+        fDampPlayer2 = true;
         Serial.println("1");
       }
     }
@@ -144,7 +144,7 @@ void pumpStateMachineHandler()
   {
     case STANDBY:
     // Turn on the pump when we need to wet a player
-    if(fWetPlayer1 || fWetPlayer2) {
+    if(fDampPlayer1 || fDampPlayer2) {
       sPumpState = PRESSURISING;
     }
     break;
@@ -164,14 +164,14 @@ void pumpStateMachineHandler()
     break;
 
     case READY:
-    if(fWetPlayer1 == true)
+    if(fDampPlayer1 == true)
     {
-      sPumpState = WETTING_P1;
+      sPumpState = MOISTING_P1;
     }
-    else if(fWetPlayer2 == true)
+    else if(fDampPlayer2 == true)
     {
       ulPumpWettingStart = millis();
-      sPumpState = WETTING_P2;
+      sPumpState = MOISTING_P2;
     }
     else
     {
@@ -179,8 +179,8 @@ void pumpStateMachineHandler()
     }
     break;
 
-    case WETTING_P1:
-    case WETTING_P2:
+    case MOISTING_P1:
+    case MOISTING_P2:
     if(ulPumpWettingStart == 0)
     {
        ulPumpWettingStart = millis();
@@ -191,17 +191,17 @@ void pumpStateMachineHandler()
       // Reset timer
       ulPumpWettingStart = 0;
       // Reset flags
-      if(sPumpState == WETTING_P1)
+      if(sPumpState == MOISTING_P1)
       {
-        fWetPlayer1 = false;
+        fDampPlayer1 = false;
       }
-      else if(sPumpState == WETTING_P2)
+      else if(sPumpState == MOISTING_P2)
       {
-        fWetPlayer2 = false;
+        fDampPlayer2 = false;
       }
 
       // Is there another player to wet?
-      if(fWetPlayer1 || fWetPlayer2)
+      if(fDampPlayer1 || fDampPlayer2)
       {
         sPumpState = PRESSURISING;
       }
@@ -254,7 +254,7 @@ void pumpStateMachineOutput()
     digitalWrite(VALVE_2_PIN, LOW);
     break;
     
-    case WETTING_P1:
+    case MOISTING_P1:
     // pump on
     digitalWrite(PUMP_PIN, HIGH);
     // valve 1 on
@@ -263,7 +263,7 @@ void pumpStateMachineOutput()
     digitalWrite(VALVE_2_PIN, LOW);
     break;
     
-    case WETTING_P2:
+    case MOISTING_P2:
     // pump on
     digitalWrite(PUMP_PIN, HIGH);
     // valve 1 off
