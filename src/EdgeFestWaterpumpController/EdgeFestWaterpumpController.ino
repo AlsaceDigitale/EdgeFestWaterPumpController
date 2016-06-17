@@ -14,7 +14,12 @@
  * GNU General Public License for more details.
  */
 
-/* Constants */
+/* PIN MAPPING */
+#define PUMP_PIN 2
+#define VALVE_1_PIN 3
+#define VALVE_2_PIN 4
+
+/* CONFIGRUATION */
 // Number of bytes we allow a serial command to be.
 const uint8_t COMMAND_BUFFER_SIZE = 254;
 // Delay in ms before we can suppose enough pressure has been created by the pump, to open valve.
@@ -47,7 +52,10 @@ boolean bPumpRequireOutputUpdate = false;
 void setup() {
   // 8 bit, Parity: None, Stop bits: 1
   Serial.begin(9600, SERIAL_8N1);
-  //TODO map GPIO to outputs and set them to low by default
+  // Pin In/out configuration
+  pinMode(PUMP_PIN, OUTPUT);
+  pinMode(VALVE_1_PIN, OUTPUT);
+  pinMode(VALVE_2_PIN, OUTPUT);
 }
 
 /**
@@ -219,31 +227,49 @@ void pumpStateMachineOutput()
 {
   switch(sPumpState)
   {
-    //TODO map the output values to GPIO
     case STANDBY:
     // pump off
+    digitalWrite(PUMP_PIN, LOW);
     // valve 1 off
+    digitalWrite(VALVE_1_PIN, LOW);
     // valve 2 off
+    digitalWrite(VALVE_2_PIN, LOW);
     break;
+    
     case PRESSURISING:
     // pump on
+    digitalWrite(PUMP_PIN, HIGH);
     // valve 1 off
+    digitalWrite(VALVE_1_PIN, LOW);
     // valve 2 off
+    digitalWrite(VALVE_2_PIN, LOW);
     break;
+    
     case READY:
     // pump on
+    digitalWrite(PUMP_PIN, HIGH);
     // valve 1 off
+    digitalWrite(VALVE_1_PIN, LOW);
     // valve 2 off
+    digitalWrite(VALVE_2_PIN, LOW);
     break;
+    
     case WETTING_P1:
     // pump on
+    digitalWrite(PUMP_PIN, HIGH);
     // valve 1 on
+    digitalWrite(VALVE_1_PIN, HIGH);
     // valve 2 off
+    digitalWrite(VALVE_2_PIN, LOW);
     break;
+    
     case WETTING_P2:
     // pump on
+    digitalWrite(PUMP_PIN, HIGH);
     // valve 1 off
+    digitalWrite(VALVE_1_PIN, LOW);
     // valve 2 on
+    digitalWrite(VALVE_2_PIN, HIGH);
     break;
   }
 }
