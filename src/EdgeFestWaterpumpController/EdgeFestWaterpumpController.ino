@@ -15,15 +15,15 @@
  */
 
 /* PIN MAPPING */
-#define PUMP_PIN 2
-#define VALVE_1_PIN 3
-#define VALVE_2_PIN 4
+//TODO Macro pour remplacer le nom du pin par le port/id du pin
+#define PUMP_PIN_P1 2
+#define PUMP_PIN_P2 3
 
 /* CONFIGRUATION */
 // Number of bytes we allow a serial command to be.
 const uint8_t COMMAND_BUFFER_SIZE = 254;
-// Delay in ms before we can suppose enough pressure has been created by the pump, to open valve.
-const uint16_t PUMP_PRESSURIZING_DELAY = 1000;
+// Delay in ms before we can switch to the other player, to avoid shorting batteries because of relay commutaiton delay. (In ms)
+const uint16_t PUMP_LATCHING_DELAY = 500;
 // For how long shall we open the valve? (in ms)
 const uint16_t WATER_OUTPUT_TIME = 500;
 
@@ -39,10 +39,10 @@ boolean fDampPlayer2 = false;
 
 /* PUMP FINITE STATE MACHINE */
 typedef enum ePumpState {
-  STANDBY = 0, PRESSURISING, READY, MOISTING_P1, MOISTING_P2
+  STANDBY = 0, LATCHING_DELAY, READY, MOISTING_P1, MOISTING_P2
 } ePumpState;
 ePumpState sPumpState = STANDBY;
-unsigned long ulPumpTurnedOn = 0;
+unsigned long ulLatchingDeleayOn = 0;
 unsigned long ulPumpWettingStart = 0;
 boolean bPumpRequireOutputUpdate = false;
 
@@ -53,9 +53,10 @@ void setup() {
   // 8 bit, Parity: None, Stop bits: 1
   Serial.begin(9600, SERIAL_8N1);
   // Pin In/out configuration
-  pinMode(PUMP_PIN, OUTPUT);
-  pinMode(VALVE_1_PIN, OUTPUT);
-  pinMode(VALVE_2_PIN, OUTPUT);
+  
+  //TODO configurer en sortie les branchements de la pompe
+  /*pinMode(PUMP_PIN_P1, OUTPUT);
+  pinMode(PUMP_PIN_P2, OUTPUT); */
 }
 
 /**
@@ -145,20 +146,20 @@ void pumpStateMachineHandler()
     case STANDBY:
     // Turn on the pump when we need to wet a player
     if(fDampPlayer1 || fDampPlayer2) {
-      sPumpState = PRESSURISING;
+      sPumpState = LATCHING_DELAY;
     }
     break;
     
-    case PRESSURISING:
-    // Store starting time of the pressurization
-    if(ulPumpTurnedOn == 0)
+    case LATCHING_DELAY:
+    // Store starting time of the latching delay
+    if(ulLatchingDeleayOn == 0)
     {
-       ulPumpTurnedOn = millis();
+       ulLatchingDeleayOn = millis();
     }
     // Have we waited to fullfit pressurizing condition?
-    if(millis() >= (ulPumpTurnedOn + PUMP_PRESSURIZING_DELAY))
+    if(millis() >= (ulLatchingDeleayOn + PUMP_LATCHING_DELAY))
     {
-      ulPumpTurnedOn = 0;
+      ulLatchingDeleayOn = 0;
       sPumpState = READY;
     }
     break;
@@ -203,7 +204,7 @@ void pumpStateMachineHandler()
       // Is there another player to wet?
       if(fDampPlayer1 || fDampPlayer2)
       {
-        sPumpState = PRESSURISING;
+        sPumpState = LATCHING_DELAY;
       }
       else
       {
@@ -228,48 +229,20 @@ void pumpStateMachineOutput()
   switch(sPumpState)
   {
     case STANDBY:
-    // pump off
-    digitalWrite(PUMP_PIN, LOW);
-    // valve 1 off
-    digitalWrite(VALVE_1_PIN, LOW);
-    // valve 2 off
-    digitalWrite(VALVE_2_PIN, LOW);
-    break;
-    
-    case PRESSURISING:
-    // pump on
-    digitalWrite(PUMP_PIN, HIGH);
-    // valve 1 off
-    digitalWrite(VALVE_1_PIN, LOW);
-    // valve 2 off
-    digitalWrite(VALVE_2_PIN, LOW);
-    break;
-    
+    // Everything off    
+    case LATCHING_DELAY:
     case READY:
-    // pump on
-    digitalWrite(PUMP_PIN, HIGH);
-    // valve 1 off
-    digitalWrite(VALVE_1_PIN, LOW);
-    // valve 2 off
-    digitalWrite(VALVE_2_PIN, LOW);
+    //TODO ALL RELAYS OPEN
     break;
     
     case MOISTING_P1:
-    // pump on
-    digitalWrite(PUMP_PIN, HIGH);
-    // valve 1 on
-    digitalWrite(VALVE_1_PIN, HIGH);
-    // valve 2 off
-    digitalWrite(VALVE_2_PIN, LOW);
+    // Player 1
+    //TODO RELAY FOR PLAYER 1
     break;
     
     case MOISTING_P2:
-    // pump on
-    digitalWrite(PUMP_PIN, HIGH);
-    // valve 1 off
-    digitalWrite(VALVE_1_PIN, LOW);
-    // valve 2 on
-    digitalWrite(VALVE_2_PIN, HIGH);
+    // Player 2
+    //TODO Relay FOR PLAYER 2
     break;
   }
 }
