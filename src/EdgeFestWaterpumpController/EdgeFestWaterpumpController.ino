@@ -16,8 +16,10 @@
 
 /* PIN MAPPING */
 //TODO Macro pour remplacer le nom du pin par le port/id du pin
-#define PUMP_PIN_P1 2
-#define PUMP_PIN_P2 3
+#define PUMP_PIN_P1_A 2
+#define PUMP_PIN_P1_B 3
+#define PUMP_PIN_P2_A 6
+#define PUMP_PIN_P2_B 7
 
 /* CONFIGRUATION */
 // Number of bytes we allow a serial command to be.
@@ -25,7 +27,7 @@ const uint8_t COMMAND_BUFFER_SIZE = 254;
 // Delay in ms before we can switch to the other player, to avoid shorting batteries because of relay commutaiton delay. (In ms)
 const uint16_t PUMP_LATCHING_DELAY = 500;
 // For how long shall we open the valve? (in ms)
-const uint16_t WATER_OUTPUT_TIME = 500;
+const uint16_t WATER_OUTPUT_TIME = 5000;
 
 /* Serial Buffer and Flags */
 // Holds incoming data.
@@ -55,8 +57,10 @@ void setup() {
   // Pin In/out configuration
   
   //TODO configurer en sortie les branchements de la pompe
-  /*pinMode(PUMP_PIN_P1, OUTPUT);
-  pinMode(PUMP_PIN_P2, OUTPUT); */
+  pinMode(PUMP_PIN_P1_A, OUTPUT);
+  pinMode(PUMP_PIN_P1_B, OUTPUT);
+  pinMode(PUMP_PIN_P2_A, OUTPUT);
+  pinMode(PUMP_PIN_P2_B, OUTPUT);
 }
 
 /**
@@ -232,17 +236,28 @@ void pumpStateMachineOutput()
     // Everything off    
     case LATCHING_DELAY:
     case READY:
-    //TODO ALL RELAYS OPEN
+    pinMode(PUMP_PIN_P1_A, LOW);
+    pinMode(PUMP_PIN_P1_B, LOW);
+    pinMode(PUMP_PIN_P2_A, LOW);
+    pinMode(PUMP_PIN_P2_B, LOW);
     break;
     
     case MOISTING_P1:
     // Player 1
-    //TODO RELAY FOR PLAYER 1
+    pinMode(PUMP_PIN_P1_A, HIGH);
+    pinMode(PUMP_PIN_P1_B, HIGH);
+    pinMode(PUMP_PIN_P2_A, LOW);
+    pinMode(PUMP_PIN_P2_B, LOW);
+    Serial.println("Moist P1");
     break;
     
     case MOISTING_P2:
     // Player 2
-    //TODO Relay FOR PLAYER 2
+    pinMode(PUMP_PIN_P1_A, LOW);
+    pinMode(PUMP_PIN_P1_B, LOW);
+    pinMode(PUMP_PIN_P2_A, HIGH);
+    pinMode(PUMP_PIN_P2_B, HIGH);
+    Serial.println("Moist P2");
     break;
   }
 }
