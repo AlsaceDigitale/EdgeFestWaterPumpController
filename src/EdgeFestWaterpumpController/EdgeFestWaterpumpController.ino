@@ -15,7 +15,6 @@
  */
 
 /* PIN MAPPING */
-//TODO Macro pour remplacer le nom du pin par le port/id du pin
 #define PUMP_PIN_P1_A 2
 #define PUMP_PIN_P1_B 3
 #define PUMP_PIN_P2_A 6
@@ -55,12 +54,11 @@ void setup() {
   // 8 bit, Parity: None, Stop bits: 1
   Serial.begin(9600, SERIAL_8N1);
   // Pin In/out configuration
-  
-  //TODO configurer en sortie les branchements de la pompe
   pinMode(PUMP_PIN_P1_A, OUTPUT);
   pinMode(PUMP_PIN_P1_B, OUTPUT);
   pinMode(PUMP_PIN_P2_A, OUTPUT);
   pinMode(PUMP_PIN_P2_B, OUTPUT);
+  Serial.println("Ready");
 }
 
 /**
@@ -89,16 +87,27 @@ void parseCommand(char* acCommand, int iBufferSize) {
     // Command parsing: 
     if(acCommand[0] == 'p' && acCommand[1] == ':' && (acCommand[2] == '1' || acCommand[2] == '2'))
     {
-      Serial.print("Queuing for player ");
       if(acCommand[2] == '1')
       {
-        fDampPlayer1 = true;
-        Serial.println("1");
+        if(fDampPlayer1) {
+          Serial.println("Player 1 is already queued.");
+        }
+        else 
+        {
+           fDampPlayer1 = true;
+           Serial.println("Queuing moisting for player 1.");
+        }
       }
       else
       {
-        fDampPlayer2 = true;
-        Serial.println("1");
+        if(fDampPlayer2) {
+          Serial.println("Player 2 is already queued.");
+        }
+        else 
+        {
+           fDampPlayer2 = true;
+           Serial.println("Queuing moisting for player 2.");
+        }
       }
     }
     else
@@ -232,32 +241,32 @@ void pumpStateMachineOutput()
 {
   switch(sPumpState)
   {
-    case STANDBY:
-    // Everything off    
     case LATCHING_DELAY:
+    Serial.println("Latching...");
+    case STANDBY:
     case READY:
-    pinMode(PUMP_PIN_P1_A, LOW);
-    pinMode(PUMP_PIN_P1_B, LOW);
-    pinMode(PUMP_PIN_P2_A, LOW);
-    pinMode(PUMP_PIN_P2_B, LOW);
+    digitalWrite(PUMP_PIN_P1_A, LOW);
+    digitalWrite(PUMP_PIN_P1_B, LOW);
+    digitalWrite(PUMP_PIN_P2_A, LOW);
+    digitalWrite(PUMP_PIN_P2_B, LOW);
     break;
     
     case MOISTING_P1:
     // Player 1
-    pinMode(PUMP_PIN_P1_A, HIGH);
-    pinMode(PUMP_PIN_P1_B, HIGH);
-    pinMode(PUMP_PIN_P2_A, LOW);
-    pinMode(PUMP_PIN_P2_B, LOW);
-    Serial.println("Moist P1");
+    digitalWrite(PUMP_PIN_P1_A, HIGH);
+    digitalWrite(PUMP_PIN_P1_B, HIGH);
+    digitalWrite(PUMP_PIN_P2_A, LOW);
+    digitalWrite(PUMP_PIN_P2_B, LOW);
+    Serial.println("Moisting P1...");
     break;
     
     case MOISTING_P2:
     // Player 2
-    pinMode(PUMP_PIN_P1_A, LOW);
-    pinMode(PUMP_PIN_P1_B, LOW);
-    pinMode(PUMP_PIN_P2_A, HIGH);
-    pinMode(PUMP_PIN_P2_B, HIGH);
-    Serial.println("Moist P2");
+    digitalWrite(PUMP_PIN_P1_A, LOW);
+    digitalWrite(PUMP_PIN_P1_B, LOW);
+    digitalWrite(PUMP_PIN_P2_A, HIGH);
+    digitalWrite(PUMP_PIN_P2_B, HIGH);
+    Serial.println("Moisting P2...");
     break;
   }
 }
